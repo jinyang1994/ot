@@ -1,30 +1,30 @@
-What does collaborative editing look like?
+What does collaborative editing look like?  
 协同编辑是什么样的？
 
-As developers, you will probably think of Git. You make changes to your document, someone else makes changes on their document, you merge, and then one of you fixes conflicts.
+As developers, you will probably think of Git. You make changes to your document, someone else makes changes on their document, you merge, and then one of you fixes conflicts.  
 作为一个开发者，你可能会想到Git。你对你的文档进行修改，其他人对他们的文档进行修改，你合并，然后你们中的一个人解决冲突。
 
-Part of that process is great. You can just make changes without having to wait for anyone else. That is called making changes optimistically, in the sense that you can do stuff without having to tell other people first and assume that your changes will come through.
+Part of that process is great. You can just make changes without having to wait for anyone else. That is called making changes optimistically, in the sense that you can do stuff without having to tell other people first and assume that your changes will come through.  
 这个过程中的一部分非常棒，你无需等待其他人就可以进行修改。这就是所谓的乐观地进行修改，在某种意义上，你假设你的修改会成功，而无需告诉其他人。
 
-Part of that process is not great. When you and I are editing the same document at the same time, we do not want to be interrupted every few minutes to deal with conflicts. A text editor that worked like that would be unusable. But conflicts do not constantly happen. They only happen when we try to edit the same place at the same time, which is not common.
+Part of that process is not great. When you and I are editing the same document at the same time, we do not want to be interrupted every few minutes to deal with conflicts. A text editor that worked like that would be unusable. But conflicts do not constantly happen. They only happen when we try to edit the same place at the same time, which is not common.  
 这个过程中的另一个部分不太好，当你和我同时编辑同一个文档时，我们不想每隔几分钟就被处理冲突所打扰。这种情况下编辑器将变的无法使用。但是冲突并不会经常发生，它仅会发生在同时编辑同一个位置，但是这并不常见。
 
-When a conflict does happen, though, what if we were not bugged about it? The system could make its best guess on what to do, and one of us could fix it if it was wrong. In theory, this seems like a terrible idea that could never work. In practice, it mostly does work.
+When a conflict does happen, though, what if we were not bugged about it? The system could make its best guess on what to do, and one of us could fix it if it was wrong. In theory, this seems like a terrible idea that could never work. In practice, it mostly does work.  
 不过，当有冲突时，我们要是没能解决问题呢？系统最好可以猜测到该怎么做，如果它是错的，我们可以修复它。理论上，这看起来像一个永远行不通的糟糕想法。实际上，它完全行得通。
 
-So how does this work in practice? The system doesn’t need to be right, it just has to be consistent, and it needs to try to keep your intent.
+So how does this work in practice? The system doesn’t need to be right, it just has to be consistent, and it needs to try to keep your intent.  
 所以如何让它在实际中工作呢？系统不需要是正确的，它只需要一致，和尝试去保留你的意图。
 
-The image below shows this. If I type in the word “hello,” the system should do its very best to make sure “hello” ends up in the document somewhere. That is intent.
+The image below shows this. If I type in the word “hello,” the system should do its very best to make sure “hello” ends up in the document somewhere. That is intent.  
 下面这张图片显示了这一点，如果我输入“hello”，最终系统应该尽力保证“hello”在文档的某个位置，这是它的意图。
 
 <img src="./img/base_1.png">
 
-And if someone else types “bye” at the same spot at the same time? Our two documents should eventually end up exactly the same, whether that is “hellobye” or “byehello” — the documents need to be consistent.
+And if someone else types “bye” at the same spot at the same time? Our two documents should eventually end up exactly the same, whether that is “hellobye” or “byehello” — the documents need to be consistent.  
 如果同时另一个人在同一个位置输入“bye”？我们的两个文档最终应该完全相同，不管它是“hellobye”还是“byehello” - 文档需要一致
 
-What about conflicts? Well, people are kind of natural conflict resolution machines. If you are walking down the hallway, and someone is about to walk into you, you will stop. Probably both of you will move to the same side. And then maybe you will both move to the other side and you will laugh. But then eventually one of you will move, and the other will stand still, and everything will work out.
+What about conflicts? Well, people are kind of natural conflict resolution machines. If you are walking down the hallway, and someone is about to walk into you, you will stop. Probably both of you will move to the same side. And then maybe you will both move to the other side and you will laugh. But then eventually one of you will move, and the other will stand still, and everything will work out.  
 冲突呢？好吧，人类是一个天然解决问题的机器。如果你在走走廊，某人即将走到你身边，你会停止。你俩可能会走向同一边，然后又同时走向另一边，然后一起笑。但是最后你们其中一个会移动弄，而另一个站着不动，问题迎刃而解。
 
 So, you want your editor to quickly respond to the person using it. If you are typing, you do not want to wait for a network request before you can see what you typed. And you want the other people editing your document to see your changes. And you want to do all of this as fast as possible. How could you make that work?
