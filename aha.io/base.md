@@ -2,13 +2,13 @@ What does collaborative editing look like?
 协同编辑是什么样的？
 
 As developers, you will probably think of Git. You make changes to your document, someone else makes changes on their document, you merge, and then one of you fixes conflicts.  
-作为一个开发者，你可能会想到Git。你对你的文档进行修改，其他人对他们的文档进行修改，你合并，然后你们中的一个人解决冲突。
+作为一个开发者，你可能会想到Git。你对你的文档进行修改，其他人对他们的文档进行修改，你们合并，然后其中的一个人解决冲突。
 
 Part of that process is great. You can just make changes without having to wait for anyone else. That is called making changes optimistically, in the sense that you can do stuff without having to tell other people first and assume that your changes will come through.  
 这个过程中的一部分非常棒，你无需等待其他人就可以进行修改。这就是所谓的乐观地进行修改，在某种意义上，你假设你的修改会成功，而无需告诉其他人。
 
 Part of that process is not great. When you and I are editing the same document at the same time, we do not want to be interrupted every few minutes to deal with conflicts. A text editor that worked like that would be unusable. But conflicts do not constantly happen. They only happen when we try to edit the same place at the same time, which is not common.  
-这个过程中的另一个部分不太好，当你和我同时编辑同一个文档时，我们不想每隔几分钟就被处理冲突所打扰。这种情况下编辑器将变的无法使用。但是冲突并不会经常发生，它仅会发生在同时编辑同一个位置，但是这并不常见。
+这个过程中的另一个部分不太好，当你和我同时编辑同一个文档时，我们不想每隔几分钟就被处理冲突所打扰。这种情况下编辑器将变的无法使用。但是冲突并不会经常发生，它仅会发生在同时编辑同一个位置，这并不常见。
 
 When a conflict does happen, though, what if we were not bugged about it? The system could make its best guess on what to do, and one of us could fix it if it was wrong. In theory, this seems like a terrible idea that could never work. In practice, it mostly does work.  
 不过，当有冲突时，我们要是没能解决问题呢？系统最好可以猜测到该怎么做，如果它是错的，我们可以修复它。理论上，这看起来像一个永远行不通的糟糕想法。实际上，它完全行得通。
@@ -27,61 +27,79 @@ And if someone else types “bye” at the same spot at the same time? Our two d
 What about conflicts? Well, people are kind of natural conflict resolution machines. If you are walking down the hallway, and someone is about to walk into you, you will stop. Probably both of you will move to the same side. And then maybe you will both move to the other side and you will laugh. But then eventually one of you will move, and the other will stand still, and everything will work out.  
 冲突呢？好吧，人类是一个天然解决问题的机器。如果你在走走廊，某人即将走到你身边，你会停止。你俩可能会走向同一边，然后又同时走向另一边，然后一起笑。但是最后你们其中一个会移动，而另一个站着不动，最后问题迎刃而解。
 
-So, you want your editor to quickly respond to the person using it. If you are typing, you do not want to wait for a network request before you can see what you typed. And you want the other people editing your document to see your changes. And you want to do all of this as fast as possible. How could you make that work?
+So, you want your editor to quickly respond to the person using it. If you are typing, you do not want to wait for a network request before you can see what you typed. And you want the other people editing your document to see your changes. And you want to do all of this as fast as possible. How could you make that work?  
+所以，你希望你的编辑器对使用者做出迅速的响应。如果你正在尝试，你不希望你等待一个网络请求结束后才能看到你输入的内容。并且你希望其他人也可以看到你正在对文档编辑的内容，最后你希望尽可能快递完成这些工作。那么你该怎么样做？
 
-The first thing you might think of is sending diffs, like the image below. “This person 1 changed line 5 from this to this.” But it is hard to see intent in a diff. All diffs do is tell you what changed, not why.
+The first thing you might think of is sending diffs, like the image below. “This person 1 changed line 5 from this to this.” But it is hard to see intent in a diff. All diffs do is tell you what changed, not why.  
+你可能想到的第一件事是发送一些差异，像下面的图片。“用户A对第5行进行了修改”。但是我们很难从中看出这次差异的意图。所有的差异仅仅告诉你哪里进行了变化，而不是为什么。
 
 <img src="./img/base_2.png">
 
-A better way is to think in terms of actions a person could take: “I inserted character ‘a’ at position 5.” “I deleted character ‘b’ after position 8.”
+A better way is to think in terms of actions a person could take: “I inserted character ‘a’ at position 5.” “I deleted character ‘b’ after position 8.”  
+更好的方式是根据一个人的行为去思考：“我在位置5插入了一个字符'a'”，“我在位置8后面删除了一个字符'b'”。
 
 <img src="./img/base_3.png">
 
-You can make these actions (or operations) pretty much whatever you want. Everything from “insert some text” to “make this section of text bold.” You can apply these to a document, and when you do, the document changes. So, as you can see below, applying this operation changes “Hello” to “Hello, world.”
+You can make these actions (or operations) pretty much whatever you want. Everything from “insert some text” to “make this section of text bold.” You can apply these to a document, and when you do, the document changes. So, as you can see below, applying this operation changes “Hello” to “Hello, world.”  
+你可以随意的执行这些行为（或操作）。从“插入一些文本”到“让这段文本变粗”。你可以将它们应用于文档，然后，文档就会改变。所以，如下所示，应用这个操作会将“Hello”修改为“Hello, world.”
 
 <img src="./img/base_4.png">
 
-If we have operations, and we can send operations, and we can change documents by applying operations, then we almost have collaboration.
+If we have operations, and we can send operations, and we can change documents by applying operations, then we almost have collaboration.  
+如果我们有了这些操作、发送它们，并且应用它们修改文档，那么我们几乎就实现了协作。
 
 What if client A sent an “insert ‘world’ at 5” operation to client B? Client B could apply that operation, and you would have the same doc! Bingo — job is finished and it is perfect. Except it is not.
+如果客户端A发送了一个“在位置5插入'world'”的操作到客户端B，我们将怎样做？客户端B可以引用这个操作，然后我们就可以用户同样的文档。Bingo - 完成工作，完美~！但是事实并非如此。
 
-Because remember — you could both be changing the document at the same time. So, let’s say you have two clients. They each have a document with the text “at” as shown below.
+Because remember — you could both be changing the document at the same time. So, let’s say you have two clients. They each have a document with the text “at” as shown below.  
+因为还记得 - 你们可以同时更改这个文档。所以，让我们假设你有两个客户端。如下所示，它们各自拥有一个“at”的文本文档
 
 <img src="./img/base_5.png">
 
-Now, the left client types “c” at position 0, making the word “cat.” At the same time, the other client types “r” at position 1, making the word “art.”
+Now, the left client types “c” at position 0, making the word “cat.” At the same time, the other client types “r” at position 1, making the word “art.”  
+现在，左边的客户端在位置0输入“c”，让这个词变为“cat”。同时，另一个客户端在位置1输入“r”，让这个词变为“art”
 
 <img src="./img/base_6.png">
 
 Now, the client on the right gets this “insert c at 0” operation from the other client and ends up with “cart.” So far, so good. But then the client on the left gets the “insert r at 1” operation from the other client, ending up with the “crat” you see below.
+现在，右边的客户端从其它客户端那获取到“在位置0插入'c'”这个操作，最终文档变成“cart”。到目前位置还挺好。但是左边的客户端从其它客户端那获取到“在位置1插入't'”这个操作，最终文档变成“crat”，如下所示。
 
 <img src="./img/base_7.png">
 
-And I have no idea what a “crat” is. (Do you?)
+And I have no idea what a “crat” is. (Do you?)  
+我不知道“crat”是什么。（你呢？）
 
-Worse than the unknown “crat,” we have violated one of our most important rules. Both documents need to be consistent with one another — they need to end up at the same state. Because now, if the client on the left deletes the character “a” after position 2, it also deletes “r” on this other client without having any idea that it is doing it. It is wrong and broken in a way a person cannot fix.
+Worse than the unknown “crat,” we have violated one of our most important rules. Both documents need to be consistent with one another — they need to end up at the same state. Because now, if the client on the left deletes the character “a” after position 2, it also deletes “r” on this other client without having any idea that it is doing it. It is wrong and broken in a way a person cannot fix.  
+比这个“cart”更糟糕，我们违反一个最重要的规则，两个文档必须一致 - 它们最终需要是同一个状态。因为现在，如果左侧客户端在位置2后面删除了一个字符“a”。他会在不知情的情况下删除了其它客户端上面的“r”。这是错误，并且以一种无法修复的方式损坏。
 
-So, something else needs to happen. And that something is operational transformation.
+So, something else needs to happen. And that something is operational transformation.  
+所以，需要发生另外一些事情。那就是“operational transformation”。
 
 Transforming operations
 
-So let’s look at the problem again. We have two operations that happen at the same time, meaning they both came from the same document state — the “at” example we talked about earlier.
+So let’s look at the problem again. We have two operations that happen at the same time, meaning they both came from the same document state — the “at” example we talked about earlier.  
+让我们再一次观察这个问题。我们同时发生了两个操作，意味着他们来自同一个文档状态 - 我们之前提到的“at”示例
 
 <img src="./img/base_8.png">
 
-Whenever we have two operations that happen on the same exact document, that means we might need to change one of them. This is because you can only make changes one after the other, in order — like we just saw with “cart” and “crat,” order matters. On this client, it means that the insert “r” has to change so that it can happen after the insert “c.” So what would this look like?
+Whenever we have two operations that happen on the same exact document, that means we might need to change one of them. This is because you can only make changes one after the other, in order — like we just saw with “cart” and “crat,” order matters. On this client, it means that the insert “r” has to change so that it can happen after the insert “c.” So what would this look like?  
+每当我们在一个完全相同的文档上进行两次操作时，这意味着我们需要更改其中的一个。这是因为你只能让修改按照顺序一个接一个的进行 - 就像我们刚刚看到的“cart”和“crat”一样，排序很重要。在这个客户端上，它意味着插入“r”这个操作应该发生在插入“c”这个操作后面。那会是什么样呢？
 
-Well, after you insert “c,” the old position 1 (highlighted in yellow below) is now position 2. Everything moved over by one. If the “r” goes in between “a” and “t” (just like it did over on the other client), it should go into position 2 — right? So, when you get that “insert r at 1,” you transform it into “insert r at 2” before you apply it.
+Well, after you insert “c,” the old position 1 (highlighted in yellow below) is now position 2. Everything moved over by one. If the “r” goes in between “a” and “t” (just like it did over on the other client), it should go into position 2 — right? So, when you get that “insert r at 1,” you transform it into “insert r at 2” before you apply it.  
+好吧，在你插入“c”之后，原来的位置1（下图以黄色高亮显示）是现在的位置2。如果这个“r”在“a”和“t”之间（就像它在另一个客户端所做的一样），它应该进入到位置2中 - 对吧？所以，当获得这个“在位置1插入'r'”的操作之后，你应该在应用它之前转换为”在位置2插入'r'“
 
 <img src="./img/base_9.png">
 
-How about on the other side? It gets “insert c at 0.” But position 0 has not moved, so “insert c at 0” can just stay as it is.
+How about on the other side? It gets “insert c at 0.” But position 0 has not moved, so “insert c at 0” can just stay as it is.  
+另一边呢？它获得”在位置0插入'c'“，但是位置0没有移动，所以”在位置0插入'c'“可以保持原样
 
 <img src="./img/base_10.png">
 
 What you are trying to do is say, “If operation A and operation B happened at the same time, how could I change operation B to adjust for what operation A did?”
+你想说的是”如果操作A和操作B同时发生，我该如何根据操作A去调整操作B？“
 
-That can sometimes be abstract and hard to think about. So I draw boxes instead. (Yep, I have lots of pieces of paper filled with boxes.) But check this out below. In the upper-left corner, I write a document state — “at.”
+That can sometimes be abstract and hard to think about. So I draw boxes instead. (Yep, I have lots of pieces of paper filled with boxes.) But check this out below. In the upper-left corner, I write a document state — “at.”  
+有时这会很抽象，并且难以思考。所以我画了个方框。（是的，我有很多画满方框的纸）看看下面这个，在左上角，我写了一个文档状态“at”。
 
 <img src="./img/base_11.png">
 
