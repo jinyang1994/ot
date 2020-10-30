@@ -48,11 +48,11 @@ You can make these actions (or operations) pretty much whatever you want. Everyt
 If we have operations, and we can send operations, and we can change documents by applying operations, then we almost have collaboration.  
 如果我们有了这些操作、发送它们，并且应用它们修改文档，那么我们几乎就实现了协作。
 
-What if client A sent an “insert ‘world’ at 5” operation to client B? Client B could apply that operation, and you would have the same doc! Bingo — job is finished and it is perfect. Except it is not.
+What if client A sent an “insert ‘world’ at 5” operation to client B? Client B could apply that operation, and you would have the same doc! Bingo — job is finished and it is perfect. Except it is not.  
 如果客户端A发送了一个“在位置5插入'world'”的操作到客户端B，我们将怎样做？客户端B可以引用这个操作，然后我们就可以用户同样的文档。Bingo - 完成工作，完美~！但是事实并非如此。
 
 Because remember — you could both be changing the document at the same time. So, let’s say you have two clients. They each have a document with the text “at” as shown below.  
-因为还记得 - 你们可以同时更改这个文档。所以，让我们假设你有两个客户端。如下所示，它们各自拥有一个“at”的文本文档
+要知道 - 你们可以同时更改这个文档。所以，让我们假设你有两个客户端。如下所示，它们各自拥有一个“at”的文本文档
 
 <img src="./img/base_5.png">
 
@@ -61,7 +61,7 @@ Now, the left client types “c” at position 0, making the word “cat.” At 
 
 <img src="./img/base_6.png">
 
-Now, the client on the right gets this “insert c at 0” operation from the other client and ends up with “cart.” So far, so good. But then the client on the left gets the “insert r at 1” operation from the other client, ending up with the “crat” you see below.
+Now, the client on the right gets this “insert c at 0” operation from the other client and ends up with “cart.” So far, so good. But then the client on the left gets the “insert r at 1” operation from the other client, ending up with the “crat” you see below.  
 现在，右边的客户端从其它客户端那获取到“在位置0插入'c'”这个操作，最终文档变成“cart”。到目前位置还挺好。但是左边的客户端从其它客户端那获取到“在位置1插入't'”这个操作，最终文档变成“crat”，如下所示。
 
 <img src="./img/base_7.png">
@@ -103,67 +103,83 @@ That can sometimes be abstract and hard to think about. So I draw boxes instead.
 
 <img src="./img/base_11.png">
 
-I draw an arrow going right and I write one of the operations (“insert c at 0”) on it. Then in the upper-right, I write what things look like after that happens (“cat”). Then I draw a line going down.
+I draw an arrow going right and I write one of the operations (“insert c at 0”) on it. Then in the upper-right, I write what things look like after that happens (“cat”). Then I draw a line going down.  
+我画了一个箭头指向右边，并且在它上面写了一个“在位置0插入‘c’”的操作。然后在右上角，我写了这个操作发生之后的样子（“cat”）。然后我往下画了条线。
 
 <img src="./img/base_12.png">
 
-Next, I draw an arrow going down. This one gets the other operation (“insert r at 1”). Same as before: I write down what things look like after that happens (“art”). And I draw an arrow going right. We end up with what you see below.
+Next, I draw an arrow going down. This one gets the other operation (“insert r at 1”). Same as before: I write down what things look like after that happens (“art”). And I draw an arrow going right. We end up with what you see below.  
+接下来，我花了一个箭头指向下面。它是获取到另一个操作（“在位置1插入‘r’”）。和之前一样：我写了这个操作发生之后的样子（“art”）。并且我画了个箭头指向右边。我们最终看到下面的样子。
 
 <img src="./img/base_13.png">
 
-Now we have a decision to make. In the lower right-hand corner, what should the document look like? This is where thinking about what your user would expect can help, but sometimes you have to just make a decision.
+Now we have a decision to make. In the lower right-hand corner, what should the document look like? This is where thinking about what your user would expect can help, but sometimes you have to just make a decision.  
+现在我们做了一个决定。在右下角，文档应该是什么样子？这时去思考你的用户期望看到什么会对你有所帮助，但是有时你必须做决定。
 
 Here, though, the answer is not ambiguous — it should be “cart.” What would need to happen to turn “cat” into “cart”? “Insert r at 2.” What would need to happen to turn “art” into “cart”? “Insert c at 0.” So we will fill in the blank arrows. Those two arrows are our two transformed operations.
+虽然这里回答是明确的 - 它应该是“cart”。该怎样去做才会让“cat”变成“cart”？“在位置2插入‘r’”。该怎样去做才会让“art”变为“cart”？“在位置0插入‘c’”。所以我们将填上这两个空白箭头，这两个箭头就是我们的转换的操作。
 
 <img src="./img/base_14.png">
 
-Once you know this, it is really easy to test drive the code that transforms your operations. The top and left sides are your inputs, and the right and bottom sides are your expected outputs.
+Once you know this, it is really easy to test drive the code that transforms your operations. The top and left sides are your inputs, and the right and bottom sides are your expected outputs.  
+一旦知道了这一点，就很容易测试驱动你的转换操作代码。上左侧是你的输入，右下侧是你期望的输出。
 
-There is one last problem to solve before we can start writing these, though. How do you break ties? If both clients are trying to insert the text in the exact same place, whose text ends up first?
+There is one last problem to solve before we can start writing these, though. How do you break ties? If both clients are trying to insert the text in the exact same place, whose text ends up first?  
+不过，开始写代码之前还有最后一个问题。如果两个客户端在同一个位置插入问题，那么谁的文本该最先完成插入？
 
-Remember — you do not have to be right, you just have to be consistent. So, pick a consistent tiebreaker. If you are communicating with a server, you can decide that the server always wins. Or you can give every client a random ID, and the biggest one wins. Just be consistent.
+Remember — you do not have to be right, you just have to be consistent. So, pick a consistent tiebreaker. If you are communicating with a server, you can decide that the server always wins. Or you can give every client a random ID, and the biggest one wins. Just be consistent.  
+记住 - 你不需要保证它是对的，你只需要保证它是一致的。所以选择一个总是优先，如果你正在与服务器通讯，你可以让服务器总是优先。或者你可以给每个用户一个随机ID，并且让最大的那个总是优先。只是为了让它一致。
 
-Writing a transformation function
+Writing a transformation function  
+编写一个转换方法
 
 We have some operations to transform and some expected return values. What would this transformation function actually look like?
+我们需要转换一些操作，并期望返回一些值。这个转换函数是什么样的？
 
-We will start with this:
+We will start with this:  
+我们将从这儿开始
 
+```javascript
+function transaform(top, left, winTiebreakers = false) {
+  const bottom = transformOperation(top, left, winTiebreakers);
+  const right = transformOperation(left, top, winTiebreakers);
+
+  return [bottom, right];
+}
 ```
-def transform(top, left, win_tiebreakers = false)
-  bottom = transform_operation(top, left, win_tiebreakers),
-  right =  transform_operation(left, top, !win_tiebreakers)
-  [bottom, right]
-end
-```
 
-It transforms top against left to get the bottom arrow, then left against top to get the right arrow, and then returns both of them, which completes our square. But that is just punting the question. What does a transform_operation function look like?
+It transforms top against left to get the bottom arrow, then left against top to get the right arrow, and then returns both of them, which completes our square. But that is just punting the question. What does a transformOperation function look like?  
+`left`依据`top`进行转换获得`bottom`，`top`依据`left`进行转换获得`right`，这样就变成了矩形。但是这是是将一个问题转换为另一个问题。`transformOperation`又是什么样的？
+
 
 Let’s focus on the line that starts with `right =`. How do you transform that left operation so it acts as if it happened after the top operation shifts everything over and becomes that right arrow — “insert r at 1”?
+让我们关注以`const right =`开始的这一行。如何在`top`发生后转换`left`成为`right` - “在位置1插入‘r’”？
 
-```
-# ours:   { type: :insert, text: “r”, position: 1 }
-# theirs: { type: :insert, text: “c”, position: 0 }
-def transform_operation(ours, theirs, win_tiebreakers)
-  # TODO: handle other kinds of operations
+```javascript
+// ours:   { type: :insert, text: “r”, position: 1 }
+// theirs: { type: :insert, text: “c”, position: 0 }
+function transformOperation(ours, theirs, winTiebreakers) {
+  const transformedOp = { ...ours };
 
-  transformed_op = ours.dup
+  if (
+    ours.position >= theirs.position
+    || (ours.position === theirs.position && !winTiebreakers)
+  ) {
+    transformedOp.position = transformedOp.position + theirs.text.length;
+  }
 
-  if ours[:position] → theirs[:position] || 
-    (ours[:position] == theirs[:position] && !win_tiebreakers )
-    transformed_op[:position] = 
-      transformed_op[:position] + theirs[:text].length
-  end
-
-  transformed_op
-end
+  return transformedOp
+}
 ```
 
 If we are only thinking about inserting text for now, writing transform_component is not too hard. We write a to-do for later.
+如果我们现在只考虑插入文本，编写transformComponent不太难，我们写to-do供以后使用。
 
-Next, we return a new operation because we do not want to mess anything up by changing the one that was passed to us. In the `if` line, we answer the question: What would cause our position to change?
+Next, we return a new operation because we do not want to mess anything up by changing the one that was passed to us. In the `if` line, we answer the question: What would cause our position to change?  
+接下来，我们返回了一个新的操作，我们不想因为接下来的修改导致原始的操作发生任何改变。在`if`这行，我们回答一个问题：什么原因会导致我们的位置发生改变？
 
-If the other client is inserting text before our spot, we will need to move over. And if they are inserting text at the same spot as us, and we lose the tiebreaker, we will also have to move over. If either of those scenarios happens, we need to move our position over by the length of the text they are inserting. If they are typing one character, we move over by one. Just like we saw before — because somebody typed a “c” before our “r,” we need to move over or we get “crat.”
+If the other client is inserting text before our spot, we will need to move over. And if they are inserting text at the same spot as us, and we lose the tiebreaker, we will also have to move over. If either of those scenarios happens, we need to move our position over by the length of the text they are inserting. If they are typing one character, we move over by one. Just like we saw before — because somebody typed a “c” before our “r,” we need to move over or we get “crat.”  
+如果其他客户端在我们之前插入了文本，我们就需要进行移动。并且如果它们和我们插入的位置相同，并且我们需要对他们的操作进行让步，我们也需要进行移动。这两种情况发生其中一种，我们需要根据插入的文本长度来移动位置。如果它们输入了一个字符，我们就需要移动一个字符的位置，就像我们之前看到的一样 - 因为某些人在我们“r”前面输入了一个“c”，我们就需要移动位置，否则我们就得到了一个“crat”
 
 This is about as simple as transformation functions get, but most of them follow the same sort of pattern:
 
@@ -201,13 +217,13 @@ Since we are talking to a server, this is easy — the server is your source of 
 
 Once we have a document version, we can keep track of which document version each operation happened in. So we add the version number of the document to every operation we create, like this:
 
-```
-→ operation
+```json
+// operation
 {
-  type: :insert,
-  text: “r”,
-  position: 1,
-  version: 2
+  "type": "insert",
+  "text": "r",
+  "position": 1,
+  "version": 2
 }
 ```
 
