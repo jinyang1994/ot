@@ -149,11 +149,11 @@ function transaform(top, left, winTiebreakers = false) {
 ```
 
 It transforms top against left to get the bottom arrow, then left against top to get the right arrow, and then returns both of them, which completes our square. But that is just punting the question. What does a transformOperation function look like?  
-`left`依据`top`进行转换获得`bottom`，`top`依据`left`进行转换获得`right`，这样就变成了矩形。但是这是是将一个问题转换为另一个问题。`transformOperation`又是什么样的？
+`left`箭头操作依据`top`箭头操作进行转换获得`bottom`箭头操作，`top`箭头操作依据`left`箭头操作进行转换获得`right`箭头操作，这样就变成了矩形。但是这是是将一个问题转换为另一个问题。`transformOperation`又是什么样的？
 
 
 Let’s focus on the line that starts with `right =`. How do you transform that left operation so it acts as if it happened after the top operation shifts everything over and becomes that right arrow — “insert r at 1”?
-让我们关注以`const right =`开始的这一行。如何在`top`发生后转换`left`成为`right` - “在位置1插入‘r’”？
+让我们关注以`const right =`开始的这一行。如何在`top`箭头操作发生后转换`left`箭头操作成为`right`箭头操作 - “在位置1插入‘r’”？
 
 ```javascript
 // ours:   { type: :insert, text: “r”, position: 1 }
@@ -181,41 +181,60 @@ Next, we return a new operation because we do not want to mess anything up by ch
 If the other client is inserting text before our spot, we will need to move over. And if they are inserting text at the same spot as us, and we lose the tiebreaker, we will also have to move over. If either of those scenarios happens, we need to move our position over by the length of the text they are inserting. If they are typing one character, we move over by one. Just like we saw before — because somebody typed a “c” before our “r,” we need to move over or we get “crat.”  
 如果其他客户端在我们之前插入了文本，我们就需要进行移动。并且如果它们和我们插入的位置相同，并且我们需要对他们的操作进行让步，我们也需要进行移动。这两种情况发生其中一种，我们需要根据插入的文本长度来移动位置。如果它们输入了一个字符，我们就需要移动一个字符的位置，就像我们之前看到的一样 - 因为某些人在我们“r”前面输入了一个“c”，我们就需要移动位置，否则我们就得到了一个“crat”
 
-This is about as simple as transformation functions get, but most of them follow the same sort of pattern:
+This is about as simple as transformation functions get, but most of them follow the same sort of pattern:  
+这和转换函数一样简单，但是其中大多数遵循相同的模式：
 
 * Check whether the other operation can affect us somehow.
 * If it can, return a new operation with that effect taken into account.
 * Otherwise, return the original operation.
+* 检查其他操作是否会以某种方式影响我们
+* 如果它会，那么根据该影响返回一个新的操作
+* 如果没有，就返回原始的操作
 
-Transformations can get complicated. But they are very functional, in the mathematical sense, which makes them easy to test. And there are some mathematical properties that these functions have to fulfill.
+Transformations can get complicated. But they are very functional, in the mathematical sense, which makes them easy to test. And there are some mathematical properties that these functions have to fulfill.  
+转换会变得复杂。但是它们在数学意义上非常实用，这使得它们易于测试。这些函数必须满足一些数学特性。
 
-For example, there is a property called TP1 that says:
+For example, there is a property called TP1 that says:  
+例如，有一个名为TP1的属性，其内容为：
 
 * If you have two documents with the same state…
+* 如果你有两个相同状态的文档
 * And you apply the first operation followed by the transformed second operation…
+* 并且你应用了第一个操作，其实是第二个...
 * You will end up with the same document as if you applied the second operation followed by the transformed first operation.
+* 你将最终获得与倒序操作相同的文档
 
-That is kind of a mouthful. But to visualize what it really says, take a look at this square below, starting in the upper left-hand corner. From there, if you take the top arrow and then the right arrow, you will end up with the same document as if you took the left arrow and then the bottom arrow.
+That is kind of a mouthful. But to visualize what it really says, take a look at this square below, starting in the upper left-hand corner. From there, if you take the top arrow and then the right arrow, you will end up with the same document as if you took the left arrow and then the bottom arrow.  
+这有点绕，但是去想象一下它的真实含义，看下面的这个矩形，从左上角开始，如果你先进行`top`箭头操作再进行`right`箭头操作，最终你都会获得与先进行`left`箭头操作再进行`bottom`箭头操作一样的文档。
 
 <img src="./img/base_15.png">
 
-If you are transforming things correctly, no matter which path you take, you end up at the same destination. Math makes it even easier to test your transformation functions. You can generate a whole bunch of random operations, transform them against each other, apply them to a document, and — as long as the documents end up equal at the end — you know that those transformation functions work.
+If you are transforming things correctly, no matter which path you take, you end up at the same destination. Math makes it even easier to test your transformation functions. You can generate a whole bunch of random operations, transform them against each other, apply them to a document, and — as long as the documents end up equal at the end — you know that those transformation functions work.  
+如果你正确地进行了转换，不管走哪条路，最终都会到达同一目的地。数学使测试转换功能更加容易。你可以生成一堆随机操作，将它们相互转化应用到文档中，最终只要文档是相同的，你就知道这些转换函数可以正常工作。
 
-So even though transformation functions can get complicated, it is not too hard to make sure they work.
+So even though transformation functions can get complicated, it is not too hard to make sure they work.  
+因为，即便转换函数变得非常复杂，想要确保它们可以正常工作也并不难。
 
-Now, these square diagrams only really work if there are two clients sending operations at the same time — right? You can only really have two arrows going out of that top-left corner and reaching the bottom left corner. If you have three clients, you get three-dimensional diagrams, if you have four, you get four-dimensional diagrams, and so on. And every path through those diagrams has to end up at the same state.
+Now, these square diagrams only really work if there are two clients sending operations at the same time — right? You can only really have two arrows going out of that top-left corner and reaching the bottom right corner. If you have three clients, you get three-dimensional diagrams, if you have four, you get four-dimensional diagrams, and so on. And every path through those diagrams has to end up at the same state.
+现在，只有在两个客户端同时操作的情况下，这些矩形才会有效对吧？你从左上角触发到达右下角只需要两个箭头。如果你有三个客户端，那么就是三维图，如果是四个，就是四维图，或者更多。这些图的路径最终都必须以相同的状态结束。
 
-But if you have a single source of truth, a central server, this all becomes so much easier. Instead of a three-dimensional diagram, you have a few two-dimensional ones — one for each client-server connection. The clients do not talk to each other directly. They talk through the server. (And as Rails devs, most of us are fairly used to relying on back-end servers.) So from now on, let’s assume we have a server and our operations go through it.
+But if you have a single source of truth, a central server, this all becomes so much easier. Instead of a three-dimensional diagram, you have a few two-dimensional ones — one for each client-server connection. The clients do not talk to each other directly. They talk through the server. (And as Rails devs, most of us are fairly used to relying on back-end servers.) So from now on, let’s assume we have a server and our operations go through it.  
+但是如果你有单一的依据，一个中央服务器，这一切都将变得简单。你可以使用多个二维图来替代三维图 — 客户端与服务器连接图。客户端之间不需要相互通信。他们通过服务器通信。（作为Rails开发人员，我们大多数人都相当习惯于依赖后端服务器。）因此，从现在开始，假设我们有一台服务器，并且我们的操作一直在进行。
 
 When do you need to transform operations?
+你何时需要转换操作？
 
-We just talked about transformation functions. These functions transform operations so you end up with sequences of operations that will all end up at the same document. But there is another piece of information you still need.
+We just talked about transformation functions. These functions transform operations so you end up with sequences of operations that will all end up at the same document. But there is another piece of information you still need.  
+我们只讨论了关于转换函数。这些函数会转换操作，因此你将获得一系列操作，这些操作都将最终出现在同一文档中。但是你还需要另外一部分信息
 
-We still need to know which operations to transform. For that, we have a control algorithm. And in order to figure that out, the algorithm needs to know if two documents are the same, so we can tell if two operations happened at the same time.
+We still need to know which operations to transform. For that, we have a control algorithm. And in order to figure that out, the algorithm needs to know if two documents are the same, so we can tell if two operations happened at the same time.  
+我们需要知道哪一个是需要转换的操作。为此，我们有一套算法。为了弄清楚操作是否需要被转换，该算法需要知道两个文档是否相等。这样我们就可以判断两个操作是否同时发生。
 
-Since we are talking to a server, this is easy — the server is your source of truth. It can give every document a unique version number and use that number to tell whether two documents are the same.
+Since we are talking to a server, this is easy — the server is your source of truth. It can give every document a unique version number and use that number to tell whether two documents are the same.  
+由于我们与服务器进行通信，这就会变得很容易 - 这个服务器是你的依据。它可以给每个文档一个唯一的版本号，并且使用这个版本号去判断两个文件是否相同。
 
-Once we have a document version, we can keep track of which document version each operation happened in. So we add the version number of the document to every operation we create, like this:
+Once we have a document version, we can keep track of which document version each operation happened in. So we add the version number of the document to every operation we create, like this:  
+有了文档版本后，我们可以跟踪操作发生在哪个文档版本中。因此，我们将文档的版本号添加到我们创建的每个操作中，如下所示：
 
 ```json
 // operation
@@ -227,54 +246,76 @@ Once we have a document version, we can keep track of which document version eac
 }
 ```
 
-Let’s say our “at” example was version 2. We had two clients run operations on that same document (“insert C” and “insert r”), so they also get version 2.
+Let’s say our “at” example was version 2. We had two clients run operations on that same document (“insert C” and “insert r”), so they also get version 2.  
+假设我们的“at”示例是版本2。我们有两个客户端在同一个文档中执行操作（“插入c”和插入“r"），因此它们也获得了版本2。
 
 This way, you can tell that these operations happened at the same time and you know you need to transform them. After applying each operation, we end up with a new document version.
+这样就可以告诉你这些操作是同时发生的，并且你需要转换它们。应用完每个操作后，我们得到一个新的版本。
 
-But what would happen if you went a little further before syncing up? What if two clients each ran two operations before they talked to each other, instead of just one?
+But what would happen if you went a little further before syncing up? What if two clients each ran two operations before they talked to each other, instead of just one?  
+但是，如果你同步一个不久之前的文档会发生什么？
 
-Transforming multiple operations
+Transforming multiple operations  
+转换多个操作
 
-Just like our example earlier, it is easier to visualize if you draw a square so you can see what is happening.
+Just like our example earlier, it is easier to visualize if you draw a square so you can see what is happening.  
+就像我们前面的例子一样，如果画一个矩形，则更容易想象，这样就可以看到正在发生的事情。
 
 <img src="./img/base_16.png">
 
-You have some arrows on the top and some arrows on the left, and you want to complete the square with the arrows on the right and an arrow on the bottom. You can use the same transformation functions you already wrote.
+You have some arrows on the top and some arrows on the left, and you want to complete the square with the arrows on the right and an arrow on the bottom. You can use the same transformation functions you already wrote.  
+你在上面有一些箭头，在左边有一些箭头，并且你想用右侧和底部的箭头完成一个矩形。你可以使用一些已写好的转换函数。
 
-But there is a trick here. Because this is not one square. As you can see below, it is actually four.
+But there is a trick here. Because this is not one square. As you can see below, it is actually four.  
+但是这里有一个窍门。因为这不是一个矩形，如下所示，它实际上是四个。
 
 <img src="./img/base_17.png">
 
-This is really important because the right side of one square becomes the new left side of the next square.
+This is really important because the right side of one square becomes the new left side of the next square.  
+这是非常重要的，因为一个矩形的右边是它右侧新生成矩形的左边。
 
 <img src="./img/base_18.png">
 
-This is a little brain-bending. So, do not worry if it does not really sink in at first. It took years for people to find and fix this problem.
+This is a little brain-bending. So, do not worry if it does not really sink in at first. It took years for people to find and fix this problem.  
+这有点令人费解。但是如果你最开始没有理解它，也不需要担心。人们花费数年才发现并解决这个问题。
 
-Just remember that you have to fill in every one of those squares. You can only have one operation per side of a square. And for every square, traveling across the top then right side has to result in the same value as traveling down the left then bottom side.
+Just remember that you have to fill in every one of those squares. You can only have one operation per side of a square. And for every square, traveling across the top then right side has to result in the same value as traveling down the left then bottom side.  
+请记住，您必须填写每个矩形。每个矩形的一侧只能进行一个操作。并且，每个矩形的`top`和`right`操作结果必须与`left`和`bottom`的结果相同。
 
-So your transformation algorithm is a little bit like this:
+So your transformation algorithm is a little bit like this:  
+所以您的转换算法有点像这样：
 
 * Take two lists of operations: the top list and the left list.
+* 取两个操作列表：`top`列表和`left`列表
 * Create two empty lists: the right list and the bottom list.
+* 创建两个空列表：`right`列表和`bottom`列表
 * Transform the first top operation and first left operation to get the bottom and right values.
+* 转换第一个`top`操作和`left`操作生成`bottom`操作和`right`操作
 * Push the bottom value onto the bottom list.
+* 将`bottom`操作推入（PUSH）进`bottom`列表
 * Hold on to the right value (I call it “transformed left”) because you will use it next.
+* 保留`right`操作（我称它为“left转换”），因为你将要用到它
 
 <img src="./img/base_19.png">
 
 * Then, transform the next top operation and the “transformed left” operation. (That one you were holding on to.)
+* 然后，转化下一个`top`操作和“left转换”操作。（继续保留）
 * Take the bottom operation you get back, and push it onto the bottom list.
+* 拿到`bottom`操作，并推入到`bottom`列表
 * If you have any more top elements, you just keep turning the right one into the new left one and keep going.
+* 如果你还有更多的`top`操作，你只需继续执行`top`操作和“left转换”操作的转换
 * Once you reach the end of a row, push the last right value onto your right list.
+* 一旦达到该行的最后面，将`right`操作推入`right`列表中。
 
 <img src="./img/base_20.png">
 
-Now you have one element in your right list and a full row of bottom operations. Turn your bottom list into the new top list and repeat this whole process with the second element of the left list. Eventually, you get all the way to the bottom and complete both your lists.
+Now you have one element in your right list and a full row of bottom operations. Turn your bottom list into the new top list and repeat this whole process with the second element of the left list. Eventually, you get all the way to the bottom and complete both your lists.  
+现在`right`列表有了一个操作，并且也有了一整行的`bottom`操作。现在将`bottom`列表转换为新的`top列表`，结合着`left`列表中的第二个元素，重复刚才的过程。最后执行完你就获得了完整的`bottom`和`right`列表。
 
 <img src="./img/base_21.png">
 
 It might help to see this in code:
+看代码可能会对你有所帮助：
 
 ```
 def transform(left, top)
