@@ -95,7 +95,7 @@ How about on the other side? It gets “insert c at 0.” But position 0 has not
 
 <img src="./img/base_10.png">
 
-What you are trying to do is say, “If operation A and operation B happened at the same time, how could I change operation B to adjust for what operation A did?”
+What you are trying to do is say, “If operation A and operation B happened at the same time, how could I change operation B to adjust for what operation A did?”  
 你想说的是”如果操作A和操作B同时发生，我该如何根据操作A去调整操作B？“
 
 That can sometimes be abstract and hard to think about. So I draw boxes instead. (Yep, I have lots of pieces of paper filled with boxes.) But check this out below. In the upper-left corner, I write a document state — “at.”  
@@ -116,7 +116,7 @@ Next, I draw an arrow going down. This one gets the other operation (“insert r
 Now we have a decision to make. In the lower right-hand corner, what should the document look like? This is where thinking about what your user would expect can help, but sometimes you have to just make a decision.  
 现在我们做了一个决定。在右下角，文档应该是什么样子？这时去思考你的用户期望看到什么会对你有所帮助，但是有时你必须做决定。
 
-Here, though, the answer is not ambiguous — it should be “cart.” What would need to happen to turn “cat” into “cart”? “Insert r at 2.” What would need to happen to turn “art” into “cart”? “Insert c at 0.” So we will fill in the blank arrows. Those two arrows are our two transformed operations.
+Here, though, the answer is not ambiguous — it should be “cart.” What would need to happen to turn “cat” into “cart”? “Insert r at 2.” What would need to happen to turn “art” into “cart”? “Insert c at 0.” So we will fill in the blank arrows. Those two arrows are our two transformed operations.  
 虽然这里回答是明确的 - 它应该是“cart”。该怎样去做才会让“cat”变成“cart”？“在位置2插入‘r’”。该怎样去做才会让“art”变为“cart”？“在位置0插入‘c’”。所以我们将填上这两个空白箭头，这两个箭头就是我们的转换的操作。
 
 <img src="./img/base_14.png">
@@ -133,7 +133,7 @@ Remember — you do not have to be right, you just have to be consistent. So, pi
 Writing a transformation function  
 编写一个转换方法
 
-We have some operations to transform and some expected return values. What would this transformation function actually look like?
+We have some operations to transform and some expected return values. What would this transformation function actually look like?  
 我们需要转换一些操作，并期望返回一些值。这个转换函数是什么样的？
 
 We will start with this:  
@@ -172,7 +172,7 @@ function transformOperation(ours, theirs, winTiebreakers) {
 }
 ```
 
-If we are only thinking about inserting text for now, writing transform_component is not too hard. We write a to-do for later.
+If we are only thinking about inserting text for now, writing transform_component is not too hard. We write a to-do for later.  
 如果我们现在只考虑插入文本，编写transformComponent不太难，我们写to-do供以后使用。
 
 Next, we return a new operation because we do not want to mess anything up by changing the one that was passed to us. In the `if` line, we answer the question: What would cause our position to change?  
@@ -185,10 +185,10 @@ This is about as simple as transformation functions get, but most of them follow
 这和转换函数一样简单，但是其中大多数遵循相同的模式：
 
 * Check whether the other operation can affect us somehow.
-* If it can, return a new operation with that effect taken into account.
-* Otherwise, return the original operation.
 * 检查其他操作是否会以某种方式影响我们
+* If it can, return a new operation with that effect taken into account.
 * 如果它会，那么根据该影响返回一个新的操作
+* Otherwise, return the original operation.
 * 如果没有，就返回原始的操作
 
 Transformations can get complicated. But they are very functional, in the mathematical sense, which makes them easy to test. And there are some mathematical properties that these functions have to fulfill.  
@@ -215,7 +215,7 @@ If you are transforming things correctly, no matter which path you take, you end
 So even though transformation functions can get complicated, it is not too hard to make sure they work.  
 因为，即便转换函数变得非常复杂，想要确保它们可以正常工作也并不难。
 
-Now, these square diagrams only really work if there are two clients sending operations at the same time — right? You can only really have two arrows going out of that top-left corner and reaching the bottom right corner. If you have three clients, you get three-dimensional diagrams, if you have four, you get four-dimensional diagrams, and so on. And every path through those diagrams has to end up at the same state.
+Now, these square diagrams only really work if there are two clients sending operations at the same time — right? You can only really have two arrows going out of that top-left corner and reaching the bottom right corner. If you have three clients, you get three-dimensional diagrams, if you have four, you get four-dimensional diagrams, and so on. And every path through those diagrams has to end up at the same state.  
 现在，只有在两个客户端同时操作的情况下，这些矩形才会有效对吧？你从左上角触发到达右下角只需要两个箭头。如果你有三个客户端，那么就是三维图，如果是四个，就是四维图，或者更多。这些图的路径最终都必须以相同的状态结束。
 
 But if you have a single source of truth, a central server, this all becomes so much easier. Instead of a three-dimensional diagram, you have a few two-dimensional ones — one for each client-server connection. The clients do not talk to each other directly. They talk through the server. (And as Rails devs, most of us are fairly used to relying on back-end servers.) So from now on, let’s assume we have a server and our operations go through it.  
@@ -314,7 +314,7 @@ Now you have one element in your right list and a full row of bottom operations.
 
 <img src="./img/base_21.png">
 
-It might help to see this in code:
+It might help to see this in code:  
 看代码可能会对你有所帮助：
 
 ```
