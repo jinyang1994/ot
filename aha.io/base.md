@@ -317,44 +317,55 @@ Now you have one element in your right list and a full row of bottom operations.
 It might help to see this in code:  
 看代码可能会对你有所帮助：
 
+```javascript
+function toArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+}
+
+function transform(left, top) {
+  const leftList = toArray(left);
+  let topList = toArray(top);
+
+  if (leftList.length === 0 || topList.length === 0) {
+    return [leftList, topList];
+  }
+  if (leftList.length === 1 && topList.length === 1){
+    const rightOp = transformOperation(leftList[0], toplist[0], true);
+    const bottomOp = transformOperation(topList[0], leftList[0], false);
+
+    return [[rightOp], [bottomOp]];
+  }
+  const rightList = [];
+  const bottomList = [];
+
+  leftList.forEach((leftOp) => {
+    const bottomList = [];
+    let transformedLeftOp = left;
+
+    topList.forEach((topOp) => {
+      const [rightOps, bottomOps] = transform(transformedLeftOp, topOp);
+
+      transformedLeftOp = rightOps;
+      bottom.concat(bottomOps);
+    });
+    rightList.concat(transformedLeftOp);
+    topList = bottomList;
+  });
+
+  return [rightList, bottomList];
+}
 ```
-def transform(left, top)
-  left = Array(left)
-  top = Array(top)
-  
-  return [left, top] if left.empty? || top.empty?
 
-  if left.length == 1 && top.length == 1
-    right = transform_operation(left.first, top.first, true)
-    bottom = transform_operation(top.first, left.first, false)
-    return [Array(right), Array(bottom)]
-  end
+The first thing to do is to make sure we are only dealing with arrays to make the code simpler later on. This way, for the rest of our control algorithm, we are only thinking about transforming lists of operations.  
+首先为了让之后的代码更简单先确保我们只处理数据。这样，对于控制算法的其余部分，我们就只考虑对操作列表的转换。
 
-  right = []
-  bottom = []
+Next, we handle some simple cases. If either our left list or top list is empty, that means we do not have to do anything. From a user’s perspective, it would be when you were the only one who made changes or you walked away from your desk while someone else was making changes. There is nothing to transform.  
+接下来，我们处理一些简单的场景。如果我们的`leftList`或者`topList`其中一个是空的，那么意味着，我们不需做任何转换。从用户的角度，它应该是只有你进行了修改或者其他进行了修改而你没进行修改。这样就没有什么需要转换。
 
-  left.each do |left_op|
-    bottom = []
-    
-    top.each do |top_op|
-      right_op, bottom_op = transform(left_op, top_op)
-      left_op = right_op
-      bottom.concat(bottom_op)
-    end
-    
-    right.concat(left_op)
-    top = bottom
-  end
-
-  [right, bottom]
-end
-```
-
-The first thing to do is to make sure we are only dealing with arrays to make the code simpler later on. This way, for the rest of our control algorithm, we are only thinking about transforming lists of operations.
-
-Next, we handle some simple cases. If either our left list or top list is empty, that means we do not have to do anything. From a user’s perspective, it would be when you were the only one who made changes or you walked away from your desk while someone else was making changes. There is nothing to transform.
-
-If you are only transforming one operation against another operation, this is exactly the same transform method as the simple squares you saw earlier. You transform the left operation against the top operation to get the right operation, and then you do it in reverse to get the bottom operation.
+If you are only transforming one operation against another operation, this is exactly the same transform method as the simple squares you saw earlier. You transform the left operation against the top operation to get the right operation, and then you do it in reverse to get the bottom operation.  
+如果你仅对一个操作与另一个操作进行转换，那么这恰好与你之前看到的简单矩形转换的方法相同。你对`left`操作与`top`操作转换获得到`right`操作，再反向获得到`bottom`操作。
 
 Now for the tricky part — when we have multiple operations in a row. Lines 13 and 14 create some empty arrays to hang onto our transformed operations as we get them. For the first row, we go through each operation on the top.
 
