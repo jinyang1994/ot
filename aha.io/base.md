@@ -139,6 +139,14 @@ We have some operations to transform and some expected return values. What would
 We will start with this:  
 我们将从这儿开始
 
+```ruby
+def transform(top, left, win_tiebreakers = false)
+  bottom = transform_operation(top, left, win_tiebreakers),
+  right =  transform_operation(left, top, !win_tiebreakers)
+  [bottom, right]
+end
+```
+
 ```javascript
 function transaform(top, left, winTiebreakers = false) {
   const bottom = transformOperation(top, left, winTiebreakers);
@@ -154,6 +162,24 @@ It transforms top against left to get the bottom arrow, then left against top to
 
 Let’s focus on the line that starts with `right =`. How do you transform that left operation so it acts as if it happened after the top operation shifts everything over and becomes that right arrow — “insert r at 1”?
 让我们关注以`const right =`开始的这一行。如何在`top`箭头操作发生后转换`left`箭头操作成为`right`箭头操作 - “在位置1插入‘r’”？
+
+```ruby
+# ours:   { type: :insert, text: “r”, position: 1 }
+# theirs: { type: :insert, text: “c”, position: 0 }
+def transform_operation(ours, theirs, win_tiebreakers)
+  # TODO: handle other kinds of operations
+
+  transformed_op = ours.dup
+
+  if ours[:position] → theirs[:position] || 
+    (ours[:position] == theirs[:position] && !win_tiebreakers )
+    transformed_op[:position] = 
+      transformed_op[:position] + theirs[:text].length
+  end
+
+  transformed_op
+end
+```
 
 ```javascript
 // ours:   { type: :insert, text: “r”, position: 1 }
@@ -342,7 +368,7 @@ function transform(left, top) {
 
   leftList.forEach((leftOp) => {
     const bottomList = [];
-    let transformedLeftOp = left;
+    let transformedLeftOp = leftOp;
 
     topList.forEach((topOp) => {
       const [rightOps, bottomOps] = transform(transformedLeftOp, topOp);
@@ -367,93 +393,127 @@ Next, we handle some simple cases. If either our left list or top list is empty,
 If you are only transforming one operation against another operation, this is exactly the same transform method as the simple squares you saw earlier. You transform the left operation against the top operation to get the right operation, and then you do it in reverse to get the bottom operation.  
 如果你仅对一个操作与另一个操作进行转换，那么这恰好与你之前看到的简单矩形转换的方法相同。你对`left`操作与`top`操作转换获得到`right`操作，再反向获得到`bottom`操作。
 
-Now for the tricky part — when we have multiple operations in a row. Lines 13 and 14 create some empty arrays to hang onto our transformed operations as we get them. For the first row, we go through each operation on the top.
+Now for the tricky part — when we have multiple operations in a row. Lines 13 and 14 create some empty arrays to hang onto our transformed operations as we get them. For the first row, we go through each operation on the top.  
+第三个部分 - 当我们在一行中有多个操作时。第13、14行创建了一些空数组用来保存我们转换过的操作。对于第一行，我们遍历`topList`获取操作。
 
-We transform them by calling this `transform` function recursively — usually, this will hit one of those two easy cases, so it is not worth thinking about too hard. It returns new transformed operations, which we will hold on to.
+We transform them by calling this `transform` function recursively — usually, this will hit one of those two easy cases, so it is not worth thinking about too hard. It returns new transformed operations, which we will hold on to.  
+我们递归调用`transform`方法转换它们 - 通常，这将触发上面两个简单场景中的其中一个，所以不需要过分考虑。它返回新的转换操作。我们将继续保留。
 
-We get back a right operation. And remember, we use that operation as the new left operation the next time around. So let’s set the right operation to the left operation. Next, we take the bottom operation we got back, and add it to the bottom list.
+We get back a right operation. And remember, we use that operation as the new left operation the next time around. So let’s set the right operation to the left operation. Next, we take the bottom operation we got back, and add it to the bottom list.  
+我们获得到一个`rightOp`操作。记住，下次我们将该操作用作新的`leftOp`操作。所以让我们将`rightOps`操作保存到`transformedLeftOp`。接下来我们将拿到的`bottomOps`添加到`bottomList`列表中。
 
-Once we are done with a whole row, the last operation is the one we end up with, so we add it to our right list. This uses left_op, but at this point, left_op and right_op are equal.
+Once we are done with a whole row, the last operation is the one we end up with, so we add it to our right list. This uses left_op, but at this point, left_op and right_op are equal.  
+一旦该行完成，最后一个`rightOp`操作就是最后一个。所以我们把它添加到`rightList`列表中。这里我们使用的是`transformedLeftOp`，因为`transformedLeftOp`和`rightOp`是相同的。
 
-And then, for the next time through the loop, our bottom list of operations becomes the new top list, and we keep going through. This is just like the second iteration we saw before.
+And then, for the next time through the loop, our bottom list of operations becomes the new top list, and we keep going through. This is just like the second iteration we saw before.  
+然后，在下一个循环中，我们的`bottomList`将成为新的`topList`，然后我们继续进行下去。就像我们之前看到的第二次迭代一样。
 
-And, when this is done, we return the right and bottom lists back to the user. Piece of cake, right?
+And, when this is done, we return the right and bottom lists back to the user. Piece of cake, right?  
+并且，在完成操作后，我们将`rightLit`和`bottomList`返回给用户，很简单对吧？
 
-Now, one upside — you probably will not have to ever write that yourself. And that is because control algorithms are generic. You could use that same function for all kinds of different apps and never have to change it. Your control algorithm doesn’t care at all about what your operations actually do.
+Now, one upside — you probably will not have to ever write that yourself. And that is because control algorithms are generic. You could use that same function for all kinds of different apps and never have to change it. Your control algorithm doesn’t care at all about what your operations actually do.  
+现在，一个好处 - 你大概不需要自己去写这个。并且因为控制算法是通用的。你可以不需要修改就将它们使用在别的应用上。控制算法并不关心你实际做什么。
 
-What should your operations actually do? Whatever your application wants!
+What should your operations actually do? Whatever your application wants! 
+您的操作实际上应该做什么？取决于你要干什么！
 
-As long as you can write transformation functions that do not violate the transformation properties, you can invent new operations all day. This is great because you can get closer and closer to representing what a person is actually doing.
+As long as you can write transformation functions that do not violate the transformation properties, you can invent new operations all day. This is great because you can get closer and closer to representing what a person is actually doing.  
+只要您可以编写不违反转换属性的转换函数，就可以整天发明新的操作。这很棒，因为你可以越来越接近地代表一个人的实际行为。
 
-But like everything, there is a tradeoff. The richer operations you have, the more operations you tend to have. And the more operations you have, the more transformation functions you have to write and the harder it is to get them right.
+But like everything, there is a tradeoff. The richer operations you have, the more operations you tend to have. And the more operations you have, the more transformation functions you have to write and the harder it is to get them right.  
+但是，与所有事物一样，这是一个折衷方案。你拥有的操作越丰富，就趋向有更多的操作。并且，进行的操作越多，必须编写的转换函数就越多，正确执行转换的难度就越大。
 
-When I worked on this problem, I had 13 different operations and I ended up writing over a hundred transformation functions. But having more specific operations meant I could keep some really strong user intent when two people were editing the same part of the document.
+When I worked on this problem, I had 13 different operations and I ended up writing over a hundred transformation functions. But having more specific operations meant I could keep some really strong user intent when two people were editing the same part of the document.  
+解决此问题时，我有了13种不同的操作，最终编写了一百多个转换函数。但是，拥有更多特定的操作意味着当两个人在编辑文档的同一部分时，我可以真正保持用户的意图。
 
-When I worked on this problem, I had 13 different operations and I ended up writing over a hundred transformation functions. But having more specific operations meant I could keep some really strong user intent when two people were editing the same part of the document.
+How can you make collaboration easier?  
+如何使协作更轻松？
 
-How can you make collaboration easier? 
+There are some things you can do to make writing a collaborative editor easy and other things that can make it nearly impossible.  
+您可以做一些事情来简化编写协作编辑器的工作，而另一些事情可以是它变得几乎不可能实现。
 
-There are some things you can do to make writing a collaborative editor easy and other things that can make it nearly impossible.
+1. Think in operations, not state changes: If you are planning to transform operations, you have to speak in terms of operations — the actions a person can take. If you are only storing full document states, you might have a tough road ahead of you.  
+思考操作而不是状态改变：如果你打算转换操作，你必须用操作去表达 - 可以拿一个人的行为。如果你仅保存了文档的状态，你可能会遇到很多问题。  
+There are ways around this. You can sometimes look at diffs of your document and infer operations from them. But you lose a lot of user intent that way. Think “insert t at position 1” not “The document changed from a to at.”  
+有一些解决方法。有时您可以根据文档的差异并从中推断出操作。但是这样会失去很多用户意图。想象“在位置1插入‘t’”而不是“将文档从‘a’修改为‘at’”
 
-1. There are some things you can do to make writing a collaborative editor easy and other things that can make it nearly impossible.
-There are ways around this. You can sometimes look at diffs of your document and infer operations from them. But you lose a lot of user intent that way. Think “insert t at position 1” not “The document changed from a to at.”
-
-2. Keep things linear: It is much easier if you can treat your document as an array of things — characters, rich objects, whatever. To transform array indexes is just addition and subtraction. You can sometimes represent trees linearly, too. Just have items in your array that mean “enter subtree” or “exit subtree.” In this case it is still easy to transform, but a little harder to work with.
-An array of characters is easier to transform than hierarchical data, but it’s not the worst thing if you have to transform trees. Instead of using indexes, you can use arrays of indexes. For example, this node could be reached by the path [1, 1] “child 1 of child 1.”
-
+2. Keep things linear: It is much easier if you can treat your document as an array of things — characters, rich objects, whatever. To transform array indexes is just addition and subtraction. You can sometimes represent trees linearly, too. Just have items in your array that mean “enter subtree” or “exit subtree.” In this case it is still easy to transform, but a little harder to work with.  
+保持线性：如果你将文档当成一些字符、对象等等的数组，那么会容易的很多。转换数组只需要添加和删除。您有时也可以线性表示树。只要在数组中包含表示“进入子树”或“退出子树”的项即可。在这种情况下，转换仍然很容易，但是使用起来却有些困难。  
+An array of characters is easier to transform than hierarchical data, but it’s not the worst thing if you have to transform trees. Instead of using indexes, you can use arrays of indexes. For example, this node could be reached by the path [1, 1] “child 1 of child 1.”  
+字符数组比对象更容易转换，但如果您必须转换树这还不是最坏的。你可以使用索引数组而不是对象属性。例如，可以通过路径[1, 1]到达“child 1 of child 1.”这个节点。  
 <img src="./img/base_22.png">
 
-3. Make your data as transformable as possible: Strings can be transformed pretty easily. You can figure out something to do with numbers, like add them. If you have conflicting edits to a custom object, though, your decisions are a lot harder.
+3. Make your data as transformable as possible: Strings can be transformed pretty easily. You can figure out something to do with numbers, like add them. If you have conflicting edits to a custom object, though, your decisions are a lot harder.  
+使你的数据尽可能地可转换：字符串可以很容易地转换。你可以找出与数字有关的内容，例如将它们相加。如果您对自定义对象的编辑有冲突，那么您的决定就困难得多。  
 
-How does this fit together?
+How does this fit together?  
 
-We have document states. (Let’s call them an array of characters to keep things simple.) Documents also have a version. Each client, as well as the server, has a copy of the document at a certain point.
+We have document states. (Let’s call them an array of characters to keep things simple.) Documents also have a version. Each client, as well as the server, has a copy of the document at a certain point.  
+我们有文档状态（为了简化操作，称它们为字符数组）。文档还有版本。每一个客户端以及服务器，在某一个时刻有一个文档副本。  
 
-You apply an operation on your own document right away so you do not have to wait to see it. Then you send it to a server, which sends it to other clients.
+You apply an operation on your own document right away so you do not have to wait to see it. Then you send it to a server, which sends it to other clients.  
+你可以立即查看应用在自己文档上的操作。然后发送操作到服务器，该服务器将其发送到其他客户端。
 
 <img src="./img/base_23.png">
 
-Sometimes, the server will say, “That is fine, I have not seen any new operations yet, my version is the same as yours.” It will acknowledge your version, you update your document version, and everyone is in sync.
+Sometimes, the server will say, “That is fine, I have not seen any new operations yet, my version is the same as yours.” It will acknowledge your version, you update your document version, and everyone is in sync.  
+有些时候，服务器会说，“我没有任何新的操作，我与你的版本是相同的”它将确认你的文档版本，你更新文档版本，并且每个人都是同步的。 
 
 <img src="./img/base_24.png">
 
-Other times, the server will say, “I cannot take that operation because I have seen a different document. But here are all the operations between your version and the one that I have.”
+Other times, the server will say, “I cannot take that operation because I have seen a different document. But here are all the operations between your version and the one that I have.”  
+其他时候，服务器会说，“我不能做这个操作，因为我看到一个不一样的文档。但是这是你版本与版本之间所有的操作”。
 
-When that happens, you transform those operations against yours because yours has already happened from your perspective. Remember? You ran it right away. Then, you apply the operations from the server, which you transformed, to your document.
+When that happens, you transform those operations against yours because yours has already happened from your perspective. Remember? You ran it right away. Then, you apply the operations from the server, which you transformed, to your document.  
+当这时，你转换这些操作转换为你的操作，因为从你的角度来说，你的已经发生改变。还记得么？你马上就执行。然后，将转换后的服务器中的操作应用于文档。
 
-Afterward, you transform your operation against all of the server’s operations because, from the server’s perspective, your operation happened after theirs. The server has not seen yours yet. Then you send that transformed version back to the server — hopefully, this time, the server will accept it. That process looks like the one shown below.
+Afterward, you transform your operation against all of the server’s operations because, from the server’s perspective, your operation happened after theirs. The server has not seen yours yet. Then you send that transformed version back to the server — hopefully, this time, the server will accept it. That process looks like the one shown below.  
+之后，您将操作转换为服务器的所有操作。因为，从服务器的角度来说，你的操作发生在他们后面。而服务器还没有看过你的操作。将转换后的版本发送回服务器 - 希望这次服务器可以接受它。该过程如下所示。
 
 <img src="./img/base_25.png">
 
-Now, everything is consistent. If there’s more than one operation happening at the same time, we have to do a little more work but the idea is still the same.
+Now, everything is consistent. If there’s more than one operation happening at the same time, we have to do a little more work but the idea is still the same.  
+现在，一切都保持一致。如果同时进行多个操作，我们还需要做更多的工作，但是想法还是一样。
 
-What else do you need?
+What else do you need?  
+你还需要什么？
 
-When you transform operations, you can build a text editor that can handle multiple people editing at the same time. But that is not quite enough to really deliver a great experience. And I will show you two reasons why.
+When you transform operations, you can build a text editor that can handle multiple people editing at the same time. But that is not quite enough to really deliver a great experience. And I will show you two reasons why.  
+当你转换操作，你可以构建一个文本编辑器，它可以处理多人同时编辑。但是不足以提供出色的体验。我将向您展示两个原因。
 
-First, if you have a few people editing the same document, it can seem to the user as though letters and words just appear out of nowhere. The user has no idea where to expect changes or what is about to happen until it happens. It would be nice if the cursors of the other people editing the document were visible so that users have some idea what to expect.
+First, if you have a few people editing the same document, it can seem to the user as though letters and words just appear out of nowhere. The user has no idea where to expect changes or what is about to happen until it happens. It would be nice if the cursors of the other people editing the document were visible so that users have some idea what to expect.  
+首先，如果你有几个人在编辑同一个文档，在用户看来，字母和单词似乎无处不在。用户在发生改变之前，不知道在哪里发生更改或将要发生的更改。如果其他人正在编辑该文档的光标是可见的，这样用户就可以知道会有什么期望。
 
-Second, let’s say the user makes a mistake while typing and hits undo. There are two different changes the text editor could undo: Should it undo the last change you made? Or the last change anyone made?
+Second, let’s say the user makes a mistake while typing and hits undo. There are two different changes the text editor could undo: Should it undo the last change you made? Or the last change anyone made?  
+其次，假设用户在输入时输入错误并点击了“撤消”。文本编辑器可以撤消两种不同的更改：是应撤消您所做的最后更改？还是所有人做的最后更改？
 
-Let’s call the scenario where you only undo your own changes “local undo.” And the second, where you can undo other people’s changes “global undo.”
+Let’s call the scenario where you only undo your own changes “local undo.” And the second, where you can undo other people’s changes “global undo.”  
+假设你只撤消自己的更改的情况称为“本地撤消”。你可以撤消其他人的更改称为“全局撤消”。
 
-If you have tried text editors with each of these different styles of undo, it quickly becomes obvious that local undo is what feels normal. If you type a character, undo should remove that character, regardless of what anyone else typed afterward. To have a great collaborative editor, we need to add cursor reporting and local undo.
+If you have tried text editors with each of these different styles of undo, it quickly becomes obvious that local undo is what feels normal. If you type a character, undo should remove that character, regardless of what anyone else typed afterward. To have a great collaborative editor, we need to add cursor reporting and local undo.  
+如果您尝试过使用每种不同撤消操作的文本编辑器。很快就会发现，本地撤消是正常的。如果输入一个字符，则撤消操作应删除该字符，而不管其他人随后键入什么字符。要拥有出色的协作编辑器，我们就需要添加光标报告和本地撤消。  
 
-Cursor synchronization
+Cursor synchronization  
+光标同步
 
-Let’s start with a bit of a philosophical question. What is a cursor, really? If your document is a list of things, a cursor is really just an position in that array.
+Let’s start with a bit of a philosophical question. What is a cursor, really? If your document is a list of things, a cursor is really just an position in that array.  
+让我们从一个哲学问题开始。真正的光标是什么？如果您的文档是个数组，则光标实际上只是该数组中的一个位置。
 
-In the document below, you have “Hello” and my cursor is before the “e.” You can say the cursor is at position 1. If it was after the “o,” you would say it is at position 5.
+In the document below, you have “Hello” and my cursor is before the “e.” You can say the cursor is at position 1. If it was after the “o,” you would say it is at position 5.  
+在下面的文档中，文档中有“have”，并且你的光标在“e”前面，你可以说这个光标在位置1。如果它在“o”的后面，你应该说它在位置5。
 
 <img src="./img/base_26.png">
 
-What about other people’s cursors? They can also be numbers, but you probably also want to know whose cursor is whose. You can attach some kind of identifier. We will just use a number and call it a client ID. So, there are two numbers: a position and a client id.
+What about other people’s cursors? They can also be numbers, but you probably also want to know whose cursor is whose. You can attach some kind of identifier. We will just use a number and call it a client ID. So, there are two numbers: a position and a client id.  
+别人的光标呢？他们可以是数字，但是你可能还像知道这些是谁的光标。你可以附加某种标识符。我们将只使用一个数字并将其称为客户端ID。所以，它们是两个数字，一个位置，一个客户端ID。
 
-Now our document is a little more complicated but not too bad. We have our list of things, a version, our own cursor offset, and a list of remote cursors. This is enough that you could render your text editor and those cursors however you want.
+Now our document is a little more complicated but not too bad. We have our list of things, a version, our own cursor offset, and a list of remote cursors. This is enough that you could render your text editor and those cursors however you want.  
+现在我们的文档有些复杂，但还算不错。我们有一个数组，一个版本号，我们自己的光标位置，一个远程光标列表。这足以使你可以渲染文本编辑器和所需的光标。
 
 <img src="./img/base_27.png">
 
-What would happen when you add a character or delete a character? Let’s go back to our first example, “cart.” Let’s say we are looking at our screen and client 2 left their cursor at position 2, in between “a” and “r.”
+What would happen when you add a character or delete a character? Let’s go back to our first example, “cart.” Let’s say we are looking at our screen and client 2 left their cursor at position 2, in between “a” and “r.”  
+添加字符或删除字符会发生什么？让我们回到第一个例子“cart”。比方说我们正在看屏幕中客户端2的光标留在“a”和“r"之间的位置2。
 
 <img src="./img/base_28.png">
 
@@ -479,7 +539,8 @@ You have to transform the other client’s cursor against that operation. That c
 
 How about sending your cursor? You can send your cursor any time, as long as you have not made any changes that the server has not confirmed yet. Otherwise, your cursor might not make sense to clients and they will not know what to do. Once the server confirms your operations, you can start sending your cursor again.
 
-Collaborative undo
+Collaborative undo  
+协同撤销
 
 Just like with cursors, to figure out how to handle local undo, we have to understand how undo usually works. Remember, we are thinking in operations — “insert ‘a’ at position 3.”
 
@@ -565,7 +626,7 @@ When you receive an operation, you:
 When you change your cursor position and you have no pending operations:
 
 * Send your current cursor position.
-* 发送你的光标位置
+* 发送你当前光标的位置
 
 When you get a cursor from someone else:
 
@@ -587,16 +648,5 @@ But it is not perfect because:
 
 If you want to build peer-to-peer collaboration that does not rely on a central server, take a look into conflict-free replicated data types (CRDTs). Same thing if you are just dealing with plain text — CRDTs tend to be great at that. CRDTs are newer collaboration methods that fit some specific kinds of text editors really well and they are getting even better.
 
-If you are using operational transformation and you do not want to write the server or control algorithm yourself, take a look at ShareDB. If you want to check out CRDTs, Y.js, Gun, and Automerge are all really cool projects.
+If you are using operational transformation and you do not want to write the server or control algorithm yourself, take a look at ShareDB. If you want to check out CRDTs, Y.js, Gun, and Automerge are all really cool projects.  
 
-Now, I love that we can do our jobs at Aha! remotely. Everyone on the team works from a home office — the entire company is fully distributed. And I love that remote work is becoming more and more popular.
-
-It also makes some things harder. It can be difficult to work together on a project. And the worst part is, when things become hard, those projects sometimes do not happen at all. I like being able to get a group together to accomplish something bigger than ourselves. But I do not want to be worried that making a small change is going to wreck your big thing.
-
-Collaborative editing is a magical experience. All of a sudden, this thing stops being just yours and it becomes ours.
-
-I am confident in making changes because my contributions will not conflict with yours. And I want that magic to be there, everywhere I go, even if I do not use it all the time. Because two people working on the same thing should make the it better, not worse.
-
-Ever since I joined the Aha! team, I have worked on some truly interesting projects. And I have only worked on a few of the many, many, many interesting projects we have going on at Aha!
-
-So you like solving cool problems for great customers and you want to work for a fast-growing, remote, and profitable software company? We are hiring and I would love to collaborate with you.
