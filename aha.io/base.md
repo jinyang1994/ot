@@ -517,136 +517,207 @@ What would happen when you add a character or delete a character? Let’s go bac
 
 <img src="./img/base_28.png">
 
-And then we run the operation, “insert h at position 1.” Now we have “chart.” Where should it draw the cursor for client 2? It would make the most sense to keep it where it was — between “a” and “r,” right?
+And then we run the operation, “insert h at position 1.” Now we have “chart.” Where should it draw the cursor for client 2? It would make the most sense to keep it where it was — between “a” and “r,” right?  
+然后我们执行操作“在位置1插入‘h’”。现在我们获得“chart"。客户端2应该在哪里绘制光标？将其保留在“ a”和“ r”之间是最有意义的，对吗？  
 
-So we can pretend that “place cursor at this position” is an operation, and we transform it against our “insert h at position 1” operation as shown below. We inserted a character before the cursor, so we move it over one spot.
+So we can pretend that “place cursor at this position” is an operation, and we transform it against our “insert h at position 1” operation as shown below. We inserted a character before the cursor, so we move it over one spot.  
+所以我们可以假装“将光标置于此位置”是一个操作，并将其转换为针对“在位置1插入h”的操作，如下所示。我们在光标之前插入了一个字符，因此将其移动到一个位置。
 
 <img src="./img/base_29.png">
 
-This is our rule: Any time you perform an operation, you need to transform all the cursors you know about against that operation to keep them in the right place. These transformations tend to be pretty easy — most are exactly the same as the insert_text transformations since you are just moving a position in both of them.
+This is our rule: Any time you perform an operation, you need to transform all the cursors you know about against that operation to keep them in the right place. These transformations tend to be pretty easy — most are exactly the same as the insert_text transformations since you are just moving a position in both of them.  
+这是我们的规则：每当你执行操作时，为了将光标保持在正确的位置，你需要针对该操作转换所有已知的光标。这些转换往往很容易 - 大多数都与insert_text转换完全相同，因为您只是在两个位置中都移动了一个位置。
 
-Once you receive a cursor from another client, you need to know one other piece of information. What version of the document did that cursor come from?
+Once you receive a cursor from another client, you need to know one other piece of information. What version of the document did that cursor come from?  
+收到其他客户的游标后，您需要了解其他信息。该光标来自哪个版本的文档？
 
-If the cursor is a position on a document version your client has not seen yet, your client cannot draw it — because you do not have that document. The cursor could be pointing to position 15, but your document only has 10 characters. So you can hold onto the cursor for later (if you want) or ignore it and hope the other client sends it again later.
+If the cursor is a position on a document version your client has not seen yet, your client cannot draw it — because you do not have that document. The cursor could be pointing to position 15, but your document only has 10 characters. So you can hold onto the cursor for later (if you want) or ignore it and hope the other client sends it again later.  
+如果光标位于您的客户端尚未看到的文档版本上，你的客户端就无法绘制它 - 因为你没有这个文档。这个光标可能指向位置15，但是你的文档只有10个字符，所以你可以保留光标以备后用（如果需要），也可以忽略它，并希望其他客户端稍后再发送。
 
-If the cursor placement is from an older version, it also might not apply to the current version of the document. When that happens, you could transform the cursor across all the operations between that version. For example, if your document is version 2 and you see a version 1 cursor, you could transform it against the operation that took your document from version 1 to version 2. Or you could also ignore it if you are expecting to see an updated cursor soon enough.
+If the cursor placement is from an older version, it also might not apply to the current version of the document. When that happens, you could transform the cursor across all the operations between that version. For example, if your document is version 2 and you see a version 1 cursor, you could transform it against the operation that took your document from version 1 to version 2. Or you could also ignore it if you are expecting to see an updated cursor soon enough.  
+如果光标位置来自旧版本，它也可能不适用于当前版本的文档。发生这种情况是，你可以通过之前所有的操作转换这个额光标。例如，如果你的文档版本是2，并且你看到了一个版本1的光标，可以针对版本1到2的操作转换它。或者你也可以忽略它，如果您希望尽快看到更新的光标。
 
-If the cursor is on the same version, you might think this is the all-clear. And it is… but only if the server has acknowledged all of your operations. But if you are at version 15, and another client’s cursor is on version 15, but you have run an insert “h” operation that you have not sent to the server yet? Well, it looks like this.
+If the cursor is on the same version, you might think this is the all-clear. And it is… but only if the server has acknowledged all of your operations. But if you are at version 15, and another client’s cursor is on version 15, but you have run an insert “h” operation that you have not sent to the server yet? Well, it looks like this.  
+如果光标在同一版本上，您可能会认为这很清楚。确实如此……但前提是服务器已确认您的所有操作。但是，如果你使用的是版本15，而另一个客户端的光标在版本15上，但是你运行了尚未发送到服务器的插入“h”操作？看起来像这样。
 
 <img src="./img/base_30.png">
 
-You have to transform the other client’s cursor against that operation. That client sent you a cursor at position 3 and you have to move it to position 4.
+You have to transform the other client’s cursor against that operation. That client sent you a cursor at position 3 and you have to move it to position 4.  
+你必须针对该操作转换另一个客户端的光标。该客户端向你发送了一个在位置3的光标，你必须将其移至位置4。
 
-How about sending your cursor? You can send your cursor any time, as long as you have not made any changes that the server has not confirmed yet. Otherwise, your cursor might not make sense to clients and they will not know what to do. Once the server confirms your operations, you can start sending your cursor again.
+How about sending your cursor? You can send your cursor any time, as long as you have not made any changes that the server has not confirmed yet. Otherwise, your cursor might not make sense to clients and they will not know what to do. Once the server confirms your operations, you can start sending your cursor again.  
+如何发送光标？你可以随时发送光标，只要你尚未进行任何服务器未确认的更改即可。否则，你的光标可能对其他客户端没有意义，并且它们将不知道该怎么办。服务器确认你的操作后，你可以再次开始发送光标。
 
 Collaborative undo  
 协同撤销
 
-Just like with cursors, to figure out how to handle local undo, we have to understand how undo usually works. Remember, we are thinking in operations — “insert ‘a’ at position 3.”
+Just like with cursors, to figure out how to handle local undo, we have to understand how undo usually works. Remember, we are thinking in operations — “insert ‘a’ at position 3.”  
+就像光标一样，弄清楚如何处理本地撤消，我们必须了解撤消通常如何工作。还记得，我们考虑的操作 - “在位置3插入‘a’”
 
-How would you undo that? You would run the operation, “remove ‘a’ at position 3.” How would you redo? You would run the operation, “insert ‘a’ at position 3.”
+How would you undo that? You would run the operation, “remove ‘a’ at position 3.”  
+How would you redo? You would run the operation, “insert ‘a’ at position 3.”  
+将如何撤消呢？你可以执行这个操作，“在位置3删除‘a’”  
+将如何重做呢？你可以执行这个操作，“在位置3插入‘a’”
 
-These two operations are inverses of each other — they cancel each other out. If you run an operation and then run its inverse, it is as though the original operation never happened. Which is exactly what you want with undo.
+These two operations are inverses of each other — they cancel each other out. If you run an operation and then run its inverse, it is as though the original operation never happened. Which is exactly what you want with undo.  
+这两个操作彼此相反 - 它们互相抵消了。如果你执行一个操作，然后执行逆向操作，它就好像从来没有发生过。这样的撤销正是你想要的。
 
-Undo also works like a stack. The last thing you did is the first thing you undo.
+Undo also works like a stack. The last thing you did is the first thing you undo.  
+撤消也像栈一样工作。你做的最后一件事是你撤消的第一件事。
 
 So, if our text editor was not collaborative, here is how you would apply an operation with undo:
+因此，如果我们的文本编辑器不支持协作，则可以通过以下方法使用撤消操作：
 
 * You perform an operation, like “insert h before position 1.”
+* 你执行了一个操作，“在位置1之前插入‘h’”
 * You invert that operation, so it becomes “remove h at position 1.”
+* 你反转了这个操作，所以它变成了“在位置1删除‘h’”
 * Then, you push that inverted operation onto the undo stack.
+* 然后，你将反转的操作推入撤销栈中
 
-What about when you hit undo?
+What about when you hit undo?  
+当你点击撤销该怎么样？
 
 * You pop the operation (“remove h at position 1”) off the stack.
+* 从堆栈弹出操作（“在位置1删除‘h’”）
 * You apply it as if you were performing it to begin with.
+* 你可以像执行它一样开始应用它。
 * Then, if you want to support redo, you invert it again and push the inverse onto the redo stack.
+* 然后，如果你想支持重做，你可以再次将其反转，然后将其反转推入重做堆栈。
 
-Simple enough, right? Let’s see how that breaks when other people are collaborating with you. You run “insert s, 4” — that pushes “remove s, 4” onto the undo stack. And you send the insert to the server.
+Simple enough, right? Let’s see how that breaks when other people are collaborating with you. You run “insert s, 4” — that pushes “remove s, 4” onto the undo stack. And you send the insert to the server.  
+很简单，对吧？让我们看看当其他人与你协作时，这种情况如何发生。
 
 <img src="./img/base_31.png">
 
-A little bit later, the server sends you the operation, “insert h at 1” — this is not happening simultaneously, so you do not have to transform it. Now our state is “charts.”
+A little bit later, the server sends you the operation, “insert h at 1” — this is not happening simultaneously, so you do not have to transform it. Now our state is “charts.”  
+稍后，服务器向你发送操作“在位置1插入‘h’” - 这不是同时发生的操作，因此你不必对其进行转换。现在我们的状态是“charts.”
 
 <img src="./img/base_32.png">
 
-Now look at our undo stack. What would happen if you hit undo? You would run “remove s at 4” — but there is no “s” at position 4, right?
+Now look at our undo stack. What would happen if you hit undo? You would run “remove s at 4” — but there is no “s” at position 4, right?  
+现在看我们的撤销栈。如果您撤消操作会怎样？你将运行“在4处删除s”-但是在位置4处没有“s”，对吧？
 
 <img src="./img/base_33.png">
 
-Clearly, we are missing a step. When you get the operation from the server, you need to transform all the operations in your undo stack against that operation. So, the undo stack is “remove s, 4.” We receive “insert h, 1″ and have to transform the undo stack so it looks like “remove s, 5.”
+Clearly, we are missing a step. When you get the operation from the server, you need to transform all the operations in your undo stack against that operation. So, the undo stack is “remove s, 4.” We receive “insert h, 1″ and have to transform the undo stack so it looks like “remove s, 5.”  
+显然，我们缺少一步。从服务器获取操作时，需要针对该操作转换撤消栈中的所有操作。所以，这个撤销栈是“在位置4移除‘s’”。我们接收到“在位置1插入‘h’”，并且必须转换撤消栈，使其看起来像“ 在位置5删除‘s’”。
 
-Now, when we undo, we run “remove s at 5” it deletes the “s” at position 5 and everything is great.
+Now, when we undo, we run “remove s at 5” it deletes the “s” at position 5 and everything is great.  
+现在，当我们撤销，我们执行操作去删除位置5的‘s’，一切都很好。
 
-When you receive an operation, you have to transform the undo stack against that operation. Luckily, we already have a function (that big transform one from earlier) that is really good at transforming lists of operations against other lists of operations.
+When you receive an operation, you have to transform the undo stack against that operation. Luckily, we already have a function (that big transform one from earlier) that is really good at transforming lists of operations against other lists of operations.  
+收到操作时，必须针对该操作转换撤消堆栈。幸运的是，我们已经有了一个函数（较早版本进行了大的转换），它确实擅长将操作列表与其他操作列表进行转换。
 
-We can just use this:
+We can just use this:  
+我们可以这样使用：
 
-```
+```ruby
 def transform_stacks(remote_op)
   self.undos, _ = transform(self.undos, remote_op)
   self.redos, _ = transform(self.redos, remote_op)
 end
 ```
 
-Here is how collaborative local undo would work then:
+```javascript
+function transformStacks(remoteOp) {
+  const [transformedUndos] = tranform(undos, remoteOp);
+  const [transformedRedos] = tranform(redos, remoteOp);
+}
+```
+
+Here is how collaborative local undo would work then:  
+以下是协作式本地撤消将如何工作：
 
 * When you perform an operation, invert it and push it on the stack.
+* 执行操作时，请将其反转并将其推入堆栈。
 * When you receive an operation, transform the stack against it.
+* 当收到一个操作时，对撤销栈进行转换。
 * When you undo, pop the top item off the stack and run it, sending it to the collaboration server.
+* 撤消操作时，从栈中弹出第一个并运行它，然后将其发送到协作服务器。
 
-This mostly works, but it is not perfect. In fact, it can violate some rules that you should have with undo. For example, if every client undoes a set of operations and then redoes them, the document should be in the same state as it was originally. Sometimes, with this method, it is not.
+This mostly works, but it is not perfect. In fact, it can violate some rules that you should have with undo. For example, if every client undoes a set of operations and then redoes them, the document should be in the same state as it was originally. Sometimes, with this method, it is not.  
+这通常有效，但并不完美。事实上，它可能会违反一些撤消规则。例如，如果每个客户端撤消一组操作然后重做它们，该文档应与原始状态相同。有时，使用这种方法不是这样。
 
-But this is a pragmatic balance between complexity and good-enough behavior. And I am not the only one who thinks so — almost all collaborative text editors that I have used, including Google Docs, can fail undo in the exact same ways.
+But this is a pragmatic balance between complexity and good-enough behavior. And I am not the only one who thinks so — almost all collaborative text editors that I have used, including Google Docs, can fail undo in the exact same ways.  
+但这是复杂性和良好行为之间的务实平衡。我不是唯一这样认为的人 - 我使用过的几乎所有协作文本编辑器（包括Google Docs）都可能以完全相同的方式使撤消失败。
 
-Putting it all together
+Putting it all together  
+全部放在一起
 
-The following is enough to make collaboration work with any kind of app. You start with a document, which can be as simple of an array of things, a version, a cursor, a list of remote cursors, and an undo stack. You have operations that act on that state, such as insert character and remove character. These operations know which version of the document they came from.
+The following is enough to make collaboration work with any kind of app. You start with a document, which can be as simple of an array of things, a version, a cursor, a list of remote cursors, and an undo stack. You have operations that act on that state, such as insert character and remove character. These operations know which version of the document they came from.  
+以下内容足以使协作与任何类型的应用程序协同工作。从一个文档开始，该文档可以是一个简单的数组，一个版本，一个光标，一个远程光标的乐鸟，一个撤销栈。有针对如文档状态的操作，例如插入字符和删除自如。这些操作知道它们来自哪个版本的文档。
 
-You have a set of transformation functions, which take two operations that happened at the same time and transform them so they can be run one after the other.
+You have a set of transformation functions, which take two operations that happened at the same time and transform them so they can be run one after the other.  
+你有一组转换函数，为了让它们一个接一个运行，你需要对两个同时的操作进行转换。
 
-You have a control algorithm, which can take two lists of operations and transform each side against each other to come up with documents that end up in the same place. You have functions to transform cursors and functions to send and receive cursors, transforming them on the way in.
+You have a control algorithm, which can take two lists of operations and transform each side against each other to come up with documents that end up in the same place. You have functions to transform cursors and functions to send and receive cursors, transforming them on the way in.  
+你有一个控制算法，可以接受两个操作列表，并且相互转换得到最终一直的文档。你有一个函数对光标进行转换，并且在过程中接收、发送、转换它们。
 
-And you have an undo stack and a redo stack, which hold inverted operations that get transformed whenever a remote operation comes in.
+And you have an undo stack and a redo stack, which hold inverted operations that get transformed whenever a remote operation comes in.  
+而且你有一个撤消堆栈和一个重做堆栈，它们包含反向操作，只要有远程操作进来，它们就会转换。
 
 When you perform an operation, you:
+当你执行一个操作，你应该：
 
 * Apply it to your document.
+* 将它应用到文档中
 * Transform all the cursors against it.
+* 转换所有的光标
 * Send it to the server.
+* 将它发送到服务器
 * Send your current selection once everything calms down.
+* 当一切结束后，发送你的选区
 
 When you receive an operation, you:
+当你接受一个操作，你应该：
 
 * Transform your pending operations against it to complete the transformation square.
+* 转换你等待发送的操作，以完成转换平方
 * Apply the transformed operation to your document, and send your pending transformed operations to the server.
+* 将转换后的操作应用到文档，并且发送你转换后等待发送的操作到服务器
 * Transform all the cursors you know about against the operation you received and transformed.
+* 根据接收和转换的操作来转换所有的光标
 * Transform your undo stack against it as well.
+* 也可以根据它转换撤消栈
 
 When you change your cursor position and you have no pending operations:
+当你改变了光标的位置，但是你没有任何修改:
 
 * Send your current cursor position.
 * 发送你当前光标的位置
 
 When you get a cursor from someone else:
+当您从其他人那里获得光标时：
 
 * If the cursor is for an older version of the document, either ignore it, or transform it up to your current version.
+* 如果这个光标来自一个老的版本，可以忽略它，或者根据新版本转换它。
 * If it is for the current version of the document, transform it against any pending operations.
+* 如果这个光标是来自当前版本，使用所有等待发送的操作对它进行转换
 * If it is for a future version of the document, either ignore it or hold onto it until you see that version of the document.
+* 如果这个光标来自未来的版本。可以忽略它，或者保留它到可以看到这个版本的文档时
 
 I have a demo that puts all this together, which you can play with.
+我有一个演示，将所有这些放在一起，您可以玩。
 
 Where to go next
+接下来呢？
 
-There are a lot of ways to build collaborative applications, but this is a good one to start with. It works for all different kinds of apps, it is not too hard to build, and it is extremely flexible. It is a model you will see a lot of companies use.
+There are a lot of ways to build collaborative applications, but this is a good one to start with. It works for all different kinds of apps, it is not too hard to build, and it is extremely flexible. It is a model you will see a lot of companies use.  
+构建协作应用程序的方法有很多，但这是一个很好的开始。它适用于所有类型的应用程序，构建起来并不难，并且非常灵活。你可以看到许多公司使用的这种模式。
 
-But it is not perfect because:
+But it is not perfect because:  
+但这并不完美，因为：
 
 * This model needs a server to work.
+* 这种模式需要服务器支持 
 * There are some edge cases, especially around undo, that would add a lot of complexity if you want to fix them.
+* 有一些极端的情况，尤其是在撤消操作领域，如果要修复它们，将会增加很多复杂性。
 * Depending on what you are building, there are other collaboration methods that might be easier or more correct.
+* 根据您要构建的内容，还有其他一些更简单或更正确的协作方法。
 
-If you want to build peer-to-peer collaboration that does not rely on a central server, take a look into conflict-free replicated data types (CRDTs). Same thing if you are just dealing with plain text — CRDTs tend to be great at that. CRDTs are newer collaboration methods that fit some specific kinds of text editors really well and they are getting even better.
+If you want to build peer-to-peer collaboration that does not rely on a central server, take a look into conflict-free replicated data types (CRDTs). Same thing if you are just dealing with plain text — CRDTs tend to be great at that. CRDTs are newer collaboration methods that fit some specific kinds of text editors really well and they are getting even better.  
+如果要建立不依赖中央服务器的对等协作，可以查看无冲突的复制数据类型（CRDT）。如果您只处理纯文本，则这是同一件事-CRDT通常很擅长于此。CRDT是较新的协作方法，非常适合某些特定类型的文本编辑器，而且它们甚至越来越好。
 
 If you are using operational transformation and you do not want to write the server or control algorithm yourself, take a look at ShareDB. If you want to check out CRDTs, Y.js, Gun, and Automerge are all really cool projects.  
-
+如果您使用的是OT，并且不想自己编写服务器或控制算法，看一下ShareDB。如果你想使用CRDT，Y.js，Gun和Automerge都是非常不错的项目。
